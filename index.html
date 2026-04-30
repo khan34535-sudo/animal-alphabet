@@ -1,0 +1,788 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animal Alphabet with Sounds</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', 'Chalkboard SE', cursive;
+            height: 100vh;
+            background: #00A86B; /* Jade Green */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .title {
+            color: #FFD700;
+            font-size: 2.8rem;
+            margin-bottom: 15px;
+            text-align: center;
+            padding: 0 20px;
+            text-shadow: 0 0 10px #FFD700;
+        }
+
+        .container {
+            width: 95%;
+            max-width: 900px;
+            height: 75vh;
+            position: relative;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 25px;
+            overflow: hidden;
+            border: 3px solid #FFD700;
+        }
+
+        .slide {
+            display: none;
+            width: 100%;
+            height: 100%;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .slide.active {
+            display: flex;
+        }
+
+        .letter {
+            font-size: 5.5rem;
+            color: #FFD700;
+            margin-bottom: 15px;
+            font-weight: bold;
+            text-shadow: 0 0 15px #FFD700;
+            position: absolute;
+            top: 15px;
+            z-index: 2;
+        }
+
+        .card {
+            background: var(--card-color);
+            border: 6px solid var(--border-color);
+            border-radius: 30px;
+            padding: 25px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            position: relative;
+            width: 300px;
+            height: 380px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+            margin-top: 60px;
+        }
+
+        .card:active {
+            transform: scale(0.95);
+        }
+
+        .card.spinning .animal-body {
+            animation: spin 1s ease-out;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(360deg) scale(1.25); }
+            100% { transform: rotate(720deg) scale(1); }
+        }
+
+        .animal-body {
+            font-size: 7rem;
+            margin-bottom: 15px;
+            display: block;
+            transition: transform 0.5s ease;
+        }
+
+        .animal-name {
+            font-size: 2.8rem;
+            color: #FFD700;
+            font-weight: bold;
+            text-shadow: 2px 2px 0 #000;
+            margin-top: 15px;
+            padding: 5px 15px;
+            border-radius: 10px;
+        }
+
+        .sound-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            background: #FFD700;
+            border: 3px solid white;
+            color: #000;
+            font-size: 1.6rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+
+        .sound-btn:hover {
+            background: #FFA500;
+            transform: scale(1.1);
+        }
+
+        .star {
+            position: absolute;
+            font-size: 32px;
+            color: #FFD700;
+            pointer-events: none;
+            animation: starFloat 1.2s ease-out forwards;
+            text-shadow: 0 0 12px #FFD700;
+            z-index: 1000;
+        }
+
+        @keyframes starFloat {
+            0% {
+                opacity: 1;
+                transform: translate(0, 0) scale(0) rotate(0deg);
+            }
+            50% {
+                opacity: 1;
+                transform: translate(var(--tx), var(--ty)) scale(1.8) rotate(180deg);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(var(--tx), var(--ty)) scale(0.5) rotate(360deg);
+            }
+        }
+
+        .nav-buttons {
+            position: absolute;
+            width: 100%;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            justify-content: space-between;
+            padding: 0 15px;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .nav-btn {
+            width: 65px;
+            height: 65px;
+            border-radius: 50%;
+            background: #FFD700;
+            border: 3px solid white;
+            color: #000;
+            font-size: 1.8rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+            transition: all 0.3s ease;
+            pointer-events: auto;
+        }
+
+        .nav-btn:hover {
+            background: #FFA500;
+            transform: scale(1.1);
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .progress {
+            position: absolute;
+            bottom: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 215, 0, 0.9);
+            border: 3px solid white;
+            padding: 10px 25px;
+            border-radius: 20px;
+            font-size: 1.2rem;
+            color: #000;
+            font-weight: bold;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .star-icon {
+            font-size: 1.4rem;
+            animation: twinkle 2s ease-in-out infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(1.2); }
+        }
+
+        @media (max-width: 768px) {
+            .title {
+                font-size: 2rem;
+            }
+            
+            .letter {
+                font-size: 4rem;
+            }
+            
+            .animal-body {
+                font-size: 5.5rem;
+            }
+            
+            .animal-name {
+                font-size: 2.2rem;
+            }
+            
+            .card {
+                width: 260px;
+                height: 320px;
+                padding: 20px;
+            }
+            
+            .nav-btn {
+                width: 55px;
+                height: 55px;
+                font-size: 1.6rem;
+            }
+            
+            .sound-btn {
+                width: 45px;
+                height: 45px;
+                font-size: 1.4rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1 class="title">🐾 Animal Alphabet 🎵</h1>
+    
+    <div class="container">
+        <!-- Slides will be added by JavaScript -->
+    </div>
+    
+    <div class="nav-buttons">
+        <button class="nav-btn prev-btn" id="prevBtn">←</button>
+        <button class="nav-btn next-btn" id="nextBtn">→</button>
+    </div>
+    
+    <div class="progress" id="progress">
+        <span class="star-icon">⭐</span>
+        <span id="counter">1 / 26</span>
+        <span class="star-icon">⭐</span>
+    </div>
+
+    <script>
+        // ANIMALS WITH FULL BODY EMOJIS - WITH CORRECTED SOUNDS
+        const animals = [
+            { 
+                letter: 'A', 
+                name: 'Alligator', 
+                emoji: '🐊', 
+                sound: 'Chomp Chomp Chomp!', 
+                color: '#FFB6C1',
+                border: '#FF69B4' 
+            },
+            { 
+                letter: 'B', 
+                name: 'Beaver', 
+                emoji: '🦫',  
+                sound: 'Gnaw Gnaw Gnaw!', 
+                color: '#FFDAC1',
+                border: '#FFB347' 
+            },
+            { 
+                letter: 'C', 
+                name: 'Cow', 
+                emoji: '🐄', 
+                sound: 'Moo Moo Moo!', 
+                color: '#E2F0CB',
+                border: '#B5EAD7' 
+            },
+            { 
+                letter: 'D', 
+                name: 'Dog', 
+                emoji: '🐕', 
+                sound: 'Woof Woof Woof!', 
+                color: '#C7CEEA',
+                border: '#A0E7E5' 
+            },
+            { 
+                letter: 'E', 
+                name: 'Elephant', 
+                emoji: '🐘', 
+                sound: 'Trumpet Trumpet Trumpet!', 
+                color: '#FFD1DC',
+                border: '#FFB7B2' 
+            },
+            { 
+                letter: 'F', 
+                name: 'Flamingo', 
+                emoji: '🦩',  
+                sound: 'Honk Honk Honk!', 
+                color: '#B5EAD7',
+                border: '#C7CEEA' 
+            },
+            { 
+                letter: 'G', 
+                name: 'Giraffe', 
+                emoji: '🦒', 
+                sound: 'Munch Munch Munch!', 
+                color: '#FFE5B4',
+                border: '#FFDAC1' 
+            },
+            { 
+                letter: 'H', 
+                name: 'Horse', 
+                emoji: '🐎',  
+                sound: 'Neigh Neigh Neigh!', 
+                color: '#D8BFD8',
+                border: '#E6E6FA' 
+            },
+            { 
+                letter: 'I', 
+                name: 'Iguana', 
+                emoji: '🦎', 
+                sound: 'Hiss Hiss Hiss!', 
+                color: '#B0E0E6',
+                border: '#87CEEB' 
+            },
+            { 
+                letter: 'J', 
+                name: 'Jaguar', 
+                emoji: '🐆', 
+                sound: 'Roar Roar Roar!', // CORRECTED TO "Roar Roar Roar!"
+                color: '#FAFAD2',
+                border: '#FFFACD' 
+            },
+            { 
+                letter: 'K', 
+                name: 'Kangaroo', 
+                emoji: '🦘',  
+                sound: 'Hop Hop Hop!', 
+                color: '#DDA0DD',
+                border: '#EE82EE' 
+            },
+            { 
+                letter: 'L', 
+                name: 'Llama', 
+                emoji: '🦙',  
+                sound: 'Hum Hum Hum!', 
+                color: '#FFE4B5',
+                border: '#FFDAB9' 
+            },
+            { 
+                letter: 'M', 
+                name: 'Monkey', 
+                emoji: '🐒', 
+                sound: 'Oh oh aww aww!', 
+                color: '#98FB98',
+                border: '#90EE90' 
+            },
+            { 
+                letter: 'N', 
+                name: 'Newt', 
+                emoji: '🦎', 
+                sound: 'Croak Croak Croak!', // CORRECTED NEWT SOUND
+                color: '#F0E68C',
+                border: '#EEE8AA' 
+            },
+            { 
+                letter: 'O', 
+                name: 'Owl', 
+                emoji: '🦉', 
+                sound: 'Hoot Hoot Hoot!', 
+                color: '#D3D3D3',
+                border: '#C0C0C0' 
+            },
+            { 
+                letter: 'P', 
+                name: 'Penguin', 
+                emoji: '🐧', 
+                sound: 'Honk Honk Honk!', 
+                color: '#F5F5DC',
+                border: '#DEB887' 
+            },
+            { 
+                letter: 'Q', 
+                name: 'Quail', 
+                emoji: '🐦', 
+                sound: 'Bob-white Bob-white!', // CORRECTED QUAIL SOUND
+                color: '#E6E6FA',
+                border: '#D8BFD8' 
+            },
+            { 
+                letter: 'R', 
+                name: 'Rabbit', 
+                emoji: '🐇', 
+                sound: 'Thump Thump Thump!', 
+                color: '#FFE4E1',
+                border: '#FFB6C1' 
+            },
+            { 
+                letter: 'S', 
+                name: 'Snake', 
+                emoji: '🐍', 
+                sound: 'Sss Sss Sss!', 
+                color: '#98FB98',
+                border: '#90EE90' 
+            },
+            { 
+                letter: 'T', 
+                name: 'Tiger', 
+                emoji: '🐅', 
+                sound: 'ROAR ROAR ROAR!', 
+                color: '#FFDAB9',
+                border: '#FFE4B5' 
+            },
+            { 
+                letter: 'U', 
+                name: 'Urial', 
+                emoji: '🐑',  
+                sound: 'Bleat Bleat Bleat!', // CORRECTED URIAL SOUND
+                color: '#E6E6FA',
+                border: '#DDA0DD' 
+            },
+            { 
+                letter: 'V', 
+                name: 'Vulture', 
+                emoji: '🦅', 
+                sound: 'Screech Screech Screech!', 
+                color: '#D3D3D3',
+                border: '#C0C0C0' 
+            },
+            { 
+                letter: 'W', 
+                name: 'Wolf', 
+                emoji: '🐺',  
+                sound: 'Howl Howl Howl!', 
+                color: '#B0E0E6',
+                border: '#87CEEB' 
+            },
+            { 
+                letter: 'X', 
+                name: 'X-Ray Fish', 
+                emoji: '🐠', 
+                sound: 'Bubble Bubble Bubble!', 
+                color: '#F0F8FF',
+                border: '#E0FFFF' 
+            },
+            { 
+                letter: 'Y', 
+                name: 'Yak', 
+                emoji: '🦬', 
+                sound: 'Moo Moo Moo!', 
+                color: '#F5DEB3',
+                border: '#DEB887' 
+            },
+            { 
+                letter: 'Z', 
+                name: 'Zebra', 
+                emoji: '🦓', 
+                sound: 'Bray Bray Bray!', 
+                color: '#FFFFFF',
+                border: '#D3D3D3' 
+            }
+        ];
+
+        let currentSlide = 0;
+        
+        function init() {
+            createSlides();
+            showSlide(0);
+            setupEventListeners();
+        }
+        
+        function createSlides() {
+            const container = document.querySelector('.container');
+            
+            animals.forEach((animal, index) => {
+                const slide = document.createElement('div');
+                slide.className = 'slide';
+                slide.id = `slide-${animal.letter}`;
+                
+                slide.innerHTML = `
+                    <div class="letter">${animal.letter}</div>
+                    <div class="card" 
+                         data-letter="${animal.letter}"
+                         data-sound="${animal.sound}"
+                         data-name="${animal.name}"
+                         style="--card-color: ${animal.color}; --border-color: ${animal.border}">
+                        <button class="sound-btn" 
+                                data-letter="${animal.letter}"
+                                data-sound="${animal.sound}"
+                                data-name="${animal.name}">
+                            🔊
+                        </button>
+                        <span class="animal-body">${animal.emoji}</span>
+                        <div class="animal-name">${animal.name}</div>
+                    </div>
+                `;
+                
+                container.appendChild(slide);
+            });
+        }
+        
+        function showSlide(index) {
+            const slides = document.querySelectorAll('.slide');
+            slides.forEach(slide => slide.classList.remove('active'));
+            
+            if (slides[index]) {
+                slides[index].classList.add('active');
+                currentSlide = index;
+                updateProgress();
+                updateNavButtons();
+            }
+        }
+        
+        function updateProgress() {
+            document.getElementById('counter').textContent = `${currentSlide + 1} / ${animals.length}`;
+        }
+        
+        function updateNavButtons() {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            prevBtn.disabled = currentSlide === 0;
+            nextBtn.disabled = currentSlide === animals.length - 1;
+        }
+        
+        function createStars(x, y) {
+            const starPositions = [
+                { angle: 0, distance: 90 },
+                { angle: 51.4, distance: 90 },
+                { angle: 102.8, distance: 90 },
+                { angle: 154.2, distance: 90 },
+                { angle: 205.6, distance: 90 },
+                { angle: 257.1, distance: 90 },
+                { angle: 308.5, distance: 90 }
+            ];
+            
+            starPositions.forEach(pos => {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.innerHTML = '⭐';
+                star.style.position = 'fixed';
+                
+                const rad = pos.angle * (Math.PI / 180);
+                const tx = Math.cos(rad) * pos.distance;
+                const ty = Math.sin(rad) * pos.distance;
+                
+                star.style.setProperty('--tx', `${tx}px`);
+                star.style.setProperty('--ty', `${ty}px`);
+                star.style.left = `${x}px`;
+                star.style.top = `${y}px`;
+                star.style.fontSize = `${28 + Math.random() * 15}px`;
+                
+                document.body.appendChild(star);
+                
+                setTimeout(() => {
+                    if (star.parentNode) {
+                        star.parentNode.removeChild(star);
+                    }
+                }, 1200);
+            });
+        }
+        
+        function speakAnimalSound(animal) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                
+                // SPEAKS: ANIMAL SOUND 3X → LETTER → NAME
+                const fullText = `${animal.sound}... ${animal.letter}... ${animal.name}`;
+                const utterance = new SpeechSynthesisUtterance(fullText);
+                
+                utterance.rate = 0.75;
+                utterance.pitch = 1.1;
+                utterance.volume = 1;
+                
+                // Try to get a child-friendly voice
+                const voices = window.speechSynthesis.getVoices();
+                if (voices.length > 0) {
+                    const friendlyVoices = voices.filter(voice => 
+                        voice.name.includes('Female') || 
+                        voice.name.includes('child') ||
+                        voice.name.includes('Kid') ||
+                        voice.lang.includes('en')
+                    );
+                    
+                    if (friendlyVoices.length > 0) {
+                        utterance.voice = friendlyVoices[0];
+                    }
+                }
+                
+                window.speechSynthesis.speak(utterance);
+                
+                // Visual feedback
+                const letterDisplay = document.querySelector('.slide.active .letter');
+                if (letterDisplay) {
+                    letterDisplay.style.textShadow = '0 0 25px #FFA500';
+                    setTimeout(() => {
+                        letterDisplay.style.textShadow = '0 0 15px #FFD700';
+                    }, 1000);
+                }
+                
+                return true;
+            }
+            return false;
+        }
+        
+        function setupEventListeners() {
+            document.getElementById('prevBtn').addEventListener('click', () => {
+                if (currentSlide > 0) {
+                    showSlide(currentSlide - 1);
+                }
+            });
+            
+            document.getElementById('nextBtn').addEventListener('click', () => {
+                if (currentSlide < animals.length - 1) {
+                    showSlide(currentSlide + 1);
+                }
+            });
+            
+            document.addEventListener('click', function(event) {
+                const card = event.target.closest('.card');
+                const soundBtn = event.target.closest('.sound-btn');
+                
+                if (card) {
+                    const letter = card.dataset.letter;
+                    const sound = card.dataset.sound;
+                    const name = card.dataset.name;
+                    
+                    if (letter && sound && name) {
+                        // Add spinning animation
+                        card.classList.add('spinning');
+                        
+                        // Create 7 yellow stars
+                        createStars(event.clientX, event.clientY);
+                        
+                        // Speak: Sound 3x → Letter → Name
+                        speakAnimalSound({ letter, sound, name });
+                        
+                        // Remove spinning class after animation
+                        setTimeout(() => {
+                            card.classList.remove('spinning');
+                        }, 1000);
+                    }
+                }
+                
+                if (soundBtn) {
+                    event.stopPropagation();
+                    const letter = soundBtn.dataset.letter;
+                    const sound = soundBtn.dataset.sound;
+                    const name = soundBtn.dataset.name;
+                    
+                    if (letter && sound && name) {
+                        const rect = soundBtn.getBoundingClientRect();
+                        createStars(rect.left + rect.width/2, rect.top + rect.height/2);
+                        
+                        // Speak: Sound 3x → Letter → Name
+                        speakAnimalSound({ letter, sound, name });
+                        
+                        // Button animation
+                        soundBtn.style.transform = 'scale(1.2)';
+                        soundBtn.style.background = '#FFA500';
+                        setTimeout(() => {
+                            soundBtn.style.transform = '';
+                            soundBtn.style.background = '';
+                        }, 300);
+                    }
+                }
+            });
+            
+            document.addEventListener('keydown', (e) => {
+                switch(e.key) {
+                    case 'ArrowLeft':
+                    case 'a':
+                        if (currentSlide > 0) showSlide(currentSlide - 1);
+                        break;
+                    case 'ArrowRight':
+                    case 'd':
+                    case ' ':
+                        if (currentSlide < animals.length - 1) showSlide(currentSlide + 1);
+                        break;
+                    case 'Enter':
+                        const animal = animals[currentSlide];
+                        speakAnimalSound(animal);
+                        
+                        const currentCard = document.querySelector('.slide.active .card');
+                        if (currentCard) {
+                            currentCard.classList.add('spinning');
+                            const rect = currentCard.getBoundingClientRect();
+                            createStars(rect.left + rect.width/2, rect.top + rect.height/2);
+                            setTimeout(() => {
+                                currentCard.classList.remove('spinning');
+                            }, 1000);
+                        }
+                        break;
+                }
+            });
+            
+            let touchStartX = 0;
+            document.addEventListener('touchstart', (e) => {
+                touchStartX = e.touches[0].clientX;
+            });
+            
+            document.addEventListener('touchend', (e) => {
+                const touchEndX = e.changedTouches[0].clientX;
+                const diff = touchStartX - touchEndX;
+                
+                if (Math.abs(diff) > 50) {
+                    if (diff > 0 && currentSlide < animals.length - 1) {
+                        showSlide(currentSlide + 1);
+                    } else if (diff < 0 && currentSlide > 0) {
+                        showSlide(currentSlide - 1);
+                    }
+                }
+            });
+        }
+        
+        window.addEventListener('load', init);
+        
+        if ('speechSynthesis' in window) {
+            setTimeout(() => {
+                window.speechSynthesis.getVoices();
+            }, 100);
+        }
+        
+        // Auto-play first animal on load
+        setTimeout(() => {
+            const firstAnimal = animals[0];
+            speakAnimalSound(firstAnimal);
+            
+            const firstCard = document.querySelector('.slide.active .card');
+            if (firstCard) {
+                firstCard.classList.add('spinning');
+                const rect = firstCard.getBoundingClientRect();
+                createStars(rect.left + rect.width/2, rect.top + rect.height/2);
+                setTimeout(() => {
+                    firstCard.classList.remove('spinning');
+                }, 1000);
+            }
+        }, 1500);
+    </script>
+</body>
+</html>
